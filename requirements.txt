@@ -1,11 +1,4 @@
-fastapi
-uvicorn
+streamlit
+requests
 pandas
-numpy
-xarray
-psycopg2-binary
-sqlalchemy
-faiss-cpu
-sentence-transformers
-openai
-python-dotenv
+plotly

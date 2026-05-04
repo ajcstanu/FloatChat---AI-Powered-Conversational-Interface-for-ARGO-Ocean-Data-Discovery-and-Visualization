@@ -1,30 +1,35 @@
-from fastapi import FastAPI
-from models import QueryRequest
-from db import query_sql
-from rag import search
+import streamlit as st
+import requests
+import pandas as pd
+import plotly.express as px
 
-app = FastAPI()
+API_URL = "http://localhost:8000/chat"
 
-@app.get("/")
-def home():
-    return {"message": "FloatChat Backend Running"}
+st.title("🌊 FloatChat - ARGO Data Explorer")
 
-def nl_to_sql(query):
-    if "salinity" in query.lower():
-        return "SELECT * FROM argo_data LIMIT 100"
-    elif "temperature" in query.lower():
-        return "SELECT * FROM argo_data LIMIT 100"
-    else:
-        return "SELECT * FROM argo_data LIMIT 50"
+query = st.text_input("Ask your question:")
 
-@app.post("/chat")
-def chat(req: QueryRequest):
-    sql = nl_to_sql(req.query)
-    data = query_sql(sql)
-    context = search(req.query)
+if st.button("Submit"):
+    response = requests.post(API_URL, json={"query": query}).json()
 
-    return {
-        "sql": sql,
-        "rows": data.head(10).to_dict(),
-        "context": context
-    }
+    st.subheader("Generated SQL")
+    st.code(response["sql"])
+
+    df = pd.DataFrame(response["rows"])
+
+    st.subheader("Data Preview")
+    st.write(df)
+
+    if not df.empty:
+        fig = px.scatter_mapbox(
+            df,
+            lat="LATITUDE",
+            lon="LONGITUDE",
+            color="TEMP",
+            zoom=2,
+            mapbox_style="open-street-map"
+        )
+        st.plotly_chart(fig)
+
+    st.subheader("RAG Context")
+    st.write(response["context"])
