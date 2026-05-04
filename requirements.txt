@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pandas
+numpy
+xarray
+psycopg2-binary
+sqlalchemy
+faiss-cpu
+sentence-transformers
+openai
+python-dotenv
